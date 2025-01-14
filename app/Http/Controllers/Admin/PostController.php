@@ -8,6 +8,7 @@ use App\Models\Post;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
@@ -77,8 +78,9 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
-        $tags = [];
         // return $request->all();
+        $tags = [];
+        $data = $request->all();
         $request->validate([
             'title' => 'required|string|min:2|max:255',
             'slug' => 'required|string|min:2|max:255|unique:posts,slug,' . $post->id,
@@ -87,18 +89,38 @@ class PostController extends Controller
             'body' => $request->published ? 'required|string|min:2|max:2500' : 'nullable|string|min:2|max:2500',
             'published' => 'required|boolean',
             'tags' => 'nullable|array',
+            'post_image' => 'nullable|image|max:1024',
         ]);
 
+        // Verificar si existen todos los tags ingresados en el select2
         foreach ($request->tags ?? [] as $name) {
+
+            // El metodo firstOrCreate sirve para consultar si el tag existe, en el caso que no se crea en base
             $tag = Tag::firstOrCreate([
                 'name' => $name,
             ]);
 
+            // Se retornan los id de los tags a un arreglo, los cuales son los que se van asociar al post
             $tags[] = $tag->id;
         }
 
+        // Se sincronizan todos los tags con el post
         $post->tags()->sync($tags);
-        $post->update($request->all());
+
+        // Validar si existe una imagen en el envio
+        if ($request->file('post_image')){
+            
+            // Si existe una imagen antes de subir una nueva, eliminar la imagen actual
+            if($post->image_path){
+                Storage::delete($post->image_path);
+            }
+
+            // Almacenar la url de la nueva imagen para almacenarla en base
+            $data['image_path'] = Storage::put('posts', $request->post_image);
+        }
+
+        // Enviar todos los datos del post a actualizar a base
+        $post->update($data);
 
         session()->flash('swal', [
             'icon' => 'success',

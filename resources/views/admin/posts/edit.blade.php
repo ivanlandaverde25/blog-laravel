@@ -4,13 +4,27 @@
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     @endpush
 
-    <form action="{{route('admin.posts.update', $post)}}" method="POST">
+    <form action="{{route('admin.posts.update', $post)}}" method="POST" enctype="multipart/form-data">
 
         @csrf
         @method('PUT')
 
         {{-- validaciones de error --}}
         <x-validation-errors class="mb-4"/>
+
+        <div class="mb-6 relative">
+            <figure>
+                <img class="asepect-[16/9] w-full object-cover object-center" src="{{$post->image}}" alt="" id="imgPreview">
+            </figure>
+
+            <div class="absolute top-8 right-8">
+                <label for="post_image" class="bg-white px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer">
+                    <i class="fa-solid fa-camera mr-2"></i>
+                    Actualizar imagen
+                    <input type="file" class="hidden" name="post_image" id="post_image" accept="image/*" onchange="previewImage(event, '#imgPreview')">
+                </label>
+            </div>
+        </div>
 
         {{-- Titulo --}}
         <div class="mb-4">
@@ -149,6 +163,22 @@
                 });
                 $('.post-category').select2();
             });
+        </script>
+
+        <script>
+            function previewImage(event, querSelector) {
+                const input = event.target;
+
+                $imgPreview = document.querySelector(querSelector);
+
+                if (!input.files.length) return
+
+                file = input.files[0];
+
+                objectUrl = URL.createObjectURL(file);
+
+                $imgPreview.src = objectUrl;
+            }
         </script>
 
         <script>

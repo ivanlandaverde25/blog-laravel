@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Post extends Model
 {
@@ -20,7 +21,8 @@ class Post extends Model
         'user_id',
         'excerpt',
         'body',
-        'published'
+        'published',
+        'image_path'
     ];
 
     protected function casts():array
@@ -40,7 +42,19 @@ class Post extends Model
 
     protected function image() : Attribute{
         return new Attribute(
-            get: fn () => $this->image_path ?? 'https://media.wired.com/photos/5f87340d114b38fa1f8339f9/master/w_1600,c_limit/Ideas_Surprised_Pikachu_HD.jpg',
+            // get: fn () => $this->image_path ?? 'https://media.wired.com/photos/5f87340d114b38fa1f8339f9/master/w_1600,c_limit/Ideas_Surprised_Pikachu_HD.jpg',
+            get: function (){
+                if($this->image_path){
+                    // verificar si la url comienza con https://
+                    if(substr($this->image_path, 0, 8) == 'https://' || substr($this->image_path, 0, 8) == 'http://'){
+                        return $this->image_path;
+                    }
+
+                    return Storage::url($this->image_path);
+                } else {
+                    return 'https://media.wired.com/photos/5f87340d114b38fa1f8339f9/master/w_1600,c_limit/Ideas_Surprised_Pikachu_HD.jpg';
+                }
+            }
         );
     }
     public function getRouteKeyName()
