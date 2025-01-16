@@ -8,6 +8,7 @@ use App\Models\Post;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
@@ -17,7 +18,8 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts = Post::latest('id')
+        $posts = Post::where('user_id', Auth::id())
+                    ->latest('id')
                     ->paginate(5);
 
         return view('admin.posts.index', compact('posts'));
@@ -68,6 +70,13 @@ class PostController extends Controller
      */
     public function edit(Post $post)
     {
+        // if(!Gate::allows('author', $post)){
+        //     abort(403, 'You are not allowed to edit.');
+        // }
+
+        // Es mas facil validar con el metodo authorize
+        Gate::authorize('author', $post);
+        
         $categories = Category::all();
         $tags = Tag::all();
         return view('admin.posts.edit', compact('post', 'categories', 'tags'));
@@ -81,6 +90,7 @@ class PostController extends Controller
         // return $request->all();
         $tags = [];
         $data = $request->all();
+        
         $request->validate([
             'title' => 'required|string|min:2|max:255',
             'slug' => 'required|string|min:2|max:255|unique:posts,slug,' . $post->id,
@@ -115,8 +125,14 @@ class PostController extends Controller
                 Storage::delete($post->image_path);
             }
 
+            // Generar nombre del archivo
+            $file_name = $request->slug . '.' . $request->file('post_image')->getClientOriginalExtension();
+
             // Almacenar la url de la nueva imagen para almacenarla en base
-            $data['image_path'] = Storage::put('posts', $request->post_image);
+            // $data['image_path'] = Storage::putFileAs('posts', $request->post_image, $file_name);
+
+            // Otra forma de guardar archivos
+            $data['image_path'] = $request->file('post_image')->storeAs('posts', $file_name);
         }
 
         // Enviar todos los datos del post a actualizar a base
