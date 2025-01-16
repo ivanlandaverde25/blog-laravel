@@ -18,6 +18,12 @@
             'active' => request()->routeIs('admin.posts.*'),
             'icon' => 'fa-solid fa-blog',
         ],
+        [
+            'name' => 'Roles',
+            'url' => route('admin.roles.index'),
+            'active' => request()->routeIs('admin.posts.*'),
+            'icon' => 'fa-solid fa-user-tag',
+        ],
     ];
 @endphp
 
