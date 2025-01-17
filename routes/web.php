@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -15,3 +16,13 @@ Route::middleware([
         return view('dashboard');
     })->name('dashboard');
 });
+
+
+// Route::get('/prueba', function(){
+//     $user = User::find(22);
+
+//     $user->password = bcrypt('123456789');
+//     $user->save();
+
+//     return $user;
+// });

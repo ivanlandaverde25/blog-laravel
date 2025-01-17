@@ -40,3 +40,7 @@ Route::resource('/users', UserController::class)
     ->parameters(['users' => 'user'])
     ->names('users')
     ->middleware('can:Gestionar Usuarios');
+
+Route::get('/prueba', function(){
+    return 'hola';
+});
