@@ -40,5 +40,11 @@ class AppServiceProvider extends ServiceProvider
         //     ? Response::allow()
         //     : Response::deny('Ya te la comiste mi pana');
         // });
+
+        // Crear Rol super administrador
+        // Para hacer esto se debe hacer sobre un rol creado previamente
+        Gate::after(function ($user, $ability) {
+            return $user->hasRole('Admin') ? true : null;
+        });
     }
 }
